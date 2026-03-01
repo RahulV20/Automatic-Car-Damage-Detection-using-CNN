@@ -1,0 +1,214 @@
+import pymysql
+import random
+from flask import Flask,render_template,request,send_from_directory
+import os
+import time
+from bottraining import bottrain
+from sentiment import trainin
+import re
+import yagmail
+import smtplib
+import imaplib
+import email
+from textblob.classifiers import NaiveBayesClassifier
+from PIL import Image,ImageDraw
+from ibm_watson import VisualRecognitionV4
+from watson_developer_cloud import VisualRecognitionV3
+from ibm_watson.visual_recognition_v4 import AnalyzeEnums, FileWithMetadata
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+app=Flask(__name__,template_folder='templates')
+path=r'/Users/RAHUL/Desktop/CSE4020/Project/static'
+img_path=r'/Users/RAHUL/Desktop/CSE4020/Project/Req.jpeg'
+def Estimation(k):
+    #estimation cost 
+    Estimate={"Bumper":3000,"Dent":2000,"Dome":15000,"Door":10000,"Light":1800,"Glass_Break":2000}
+    s=0 
+    Parts={}
+    for j in k:
+       s+=Estimate[j]
+       Parts.update({j:Estimate[j]})
+    Parts.update({"Scaled Total":s})
+    return Parts #dictionary of damaged parts & its cost
+def database_connection(PolicyId,status,image):
+   con=pymysql.connect(host="localhost",user="root",password="",database="insurance")#database connection
+   cursor=con.cursor()
+   qu="select Policy_Amount,Status_Claim from claimdata where PolicyId="+PolicyId+";"
+   cursor.execute(qu)#extracting data from database
+   Am=cursor.fetchall()
+   con.commit()
+   if status=="Accepted" and (Am):
+       up_status="update claimdata set Status_Claim=1 where PolicyId="+str(PolicyId)+";" #updating claim status
+       cursor.execute(up_status)
+   con.commit()
+   con.close()
+   if Am[0][1]==1: #claim check
+       return 0
+   else:
+       s=Am[0][0] # Policy Amount 
+       return (int(s[0]))
+def database(PolicyID):  
+     con=pymysql.connect(host="localhost",user="root",password="",database="insurance")
+     cursor=con.cursor()
+     req_Det="select Policy_Amount,PolicyName,start_Date,End_Date,Status_Claim from  claimdata where PolicyId="+str(PolicyID)+";"
+     cursor.execute(req_Det)
+     Details=cursor.fetchall()
+     con.commit()
+     con.close()
+     return Details
+def receive():
+   mail = imaplib.IMAP4_SSL('imap.gmail.com')
+   mail.login('insurancebheema@gmail.com', 'inframind')
+   mail.list()
+   mail.select("inbox") # connecting to inbox.
+   result, data = mail.search(None, "ALL")#filtering emails
+   ids = data[0] # data is a list.
+   id_list = ids.split() # ids is a space separated string
+   latest_email_id =id_list[-1] # get the latest mailid
+   result, data = mail.fetch(latest_email_id, "(RFC822)") 
+   for response_part in data:
+       if isinstance(response_part,tuple):
+           message=email.message_from_bytes(response_part[1])
+           if message.is_multipart():
+               mail_content=''
+               for part in message.get_payload():
+                   if part.get_content_type()=='text/plain':
+                       mail_content+=part.get_payload()
+           else:
+               mail_content=message.get_payload()
+           return (mail_content)
+def send(txt): 
+  yag=yagmail.SMTP(user="insurancebheema@gmail.com",password="inframind")#Email connection
+  yag.send("vudatharahul@gmail.com","User Query",txt) #sending email
+i=0
+conv={}
+Data=()
+@app.route("/get")
+def get_bot_response():
+     userText = request.args.get("msg")#User Query in chatbot
+     userText=userText.lower()
+     global i,conv,Data
+     res=trainin(userText)
+     Data=database(polid)
+     #Database checking from the userInput 
+     handoff=["sure","yes,connect it","okay","ok","yup","ok,make it fast","done"]
+     date=["start date","policy starts","date of commencement"]
+     Am=["policy amount","amount","My idv","total amount","policy value"]
+     close=["close date","end date","last date","ends at"]
+     view=["view","show my policy details","display my policy","details about my policy","policy information"]
+     tot=handoff+date+Am+close+view 
+     if (userText) in tot:
+       for d in date:
+        if d in userText:
+          return ("Your policy start date is "+str(Data[0][3]))
+       for i in Am:
+        if i in userText:
+          return ("Your IDV is "+Data[0][0])
+       for cl in close:
+        if cl in userText:
+          return ("Your policy ends at "+str(Data[0][4]))
+       for vi in view:
+        if vi in userText:
+          return ("IDV - "+Data[0][0]+"</p><p class='botText'><span>Start Date - "+str(Data[0][2])+"<span></p><p class='botText'><span>End Date - "+str(Data[0][3])+"</span></p><p class='botText'><span> Status Claim -"+str(Data[0][4]))
+     for x in handoff:
+        if (x in userText) or (i==1) or res :
+          send(userText)
+          time.sleep(20)# time setting for agent to reply
+          s=receive()
+          i=1
+          conv.update({userText:s})# convo update-storage for next sentiment analysis
+          return s
+     resp=str(bottrain(userText))
+     if len(resp)>30 and len(resp)<60:
+         r=len(resp[:30].rsplit(' ', 1)[0])
+         response=resp[:r]+"</span></p><p class='botText'><span>"+resp[r:] #response multiline making
+     elif(len(resp)>60):
+         r=len(resp[:30].rsplit(' ', 1)[0])
+         response=resp[:r]+"</span></p><p class='botText'><span>"+resp[r:60]+"</span></p><p class='botText'><span>"+resp[60:]
+     else:
+         response=resp[:]
+     conv.update({userText:response})
+     return response #bot response
+@app.route('/login')
+def login():
+    return render_template("login.html") #rendering login details
+@app.route('/Claim_Request',methods=['GET','POST'])
+def Claim_Request():
+    global polid
+    if request.method=="POST":
+        username=request.form['UserName']
+        passw=request.form['PassWord']#Getting user details for validation
+        con=pymysql.connect(host="localhost",user="root",password="",database="insurance")
+        cursor=con.cursor()
+        req_Det="select PolicyId  from  %s  where UserName=%%s AND Password=%%s""" %("claimdata",)
+        cursor.execute(req_Det,((username,passw)))
+        Details=cursor.fetchall()
+        if not Details:
+            return "<script>alert('password is incorrect');</script>" 
+        polid=Details[0][0]
+    return render_template('Claim_Form.html',pid=polid)
+def detection(img_path):
+    global severity_Class
+    severity_Class=""
+    severity = VisualRecognitionV3(version='2019-02-11', iam_apikey='qCsWsFfybkglG76TBdjwqYEr3bkD2lHv-Aihok8e3yht')
+    try:
+      with open(img_path, 'rb') as images_file:
+       classes =severity.classify(images_file,threshold='0.6',classifier_ids='severityclassify_705178400').get_result()
+       severity_Class=(((((((classes["images"])[0])['classifiers'])[0])['classes'])[0])['class'])
+    except:
+        return {}
+    authenticator = IAMAuthenticator('50qOrFZOconfI30gPSNJ2Z5hDYmANuAft0Riu5fD__CT')#watson visual recognition model
+    visual_recognition = VisualRecognitionV4(version='2019-02-11',authenticator=authenticator)
+    visual_recognition.set_service_url('https://api.us-south.visual-recognition.watson.cloud.ibm.com/instances/5dfa5dd9-abf6-4768-82ea-a19f68dd475a')
+    try:
+      with  open(img_path, 'rb') as dice_file:
+        result = visual_recognition.analyze(collection_ids=["5393993e-9c07-4939-abf5-622539267e8d"],
+        features=[AnalyzeEnums.Features.OBJECTS.value],
+        images_file=[FileWithMetadata(dice_file)],threshold=0.15).get_result()
+        k=result['images']
+        t=((k[0])["objects"])
+        s=t["collections"]
+        z=((s[0])['objects'])
+        img_analysis={}
+        for i in z:
+            a,b=i['object'],i['location']
+            img_analysis.update({a:b})#Model result-Damaged parts and its location
+        return img_analysis 
+    except:
+        return {}       
+@app.route('/Request_Result',methods=['GET','POST'])
+def Request_Result(): 
+    if request.method == 'POST':
+        f=request.files['Image']
+        p=request.form['policy_id']
+        f.save(os.path.join(app.root_path,img_path)) #damaged image saving
+        analy=detection(img_path)
+        if len(analy)==0:
+            status="Rejected"
+        else:
+            status="Accepted"
+        im=Image.open(img_path)
+        img1=ImageDraw.Draw(im) #location of damaged part drawing
+        color=["red","blue","green","yellow","white"]
+        m=0
+        for i in analy.values():
+            img1.rectangle(((i['left'],i['top']),((i['left']+i['width']),(i['top']+i['height']))),fill=None,outline=color[m],width=3)
+            m=m+1
+        new_name="Result"+str(time.time())+".jpeg"
+        for filename in os.listdir((path)):
+            if filename.startswith('Result_'):
+                os.remove(path+filename)
+        im.save(r'/Users/RAHUL/Desktop/CSE4020/Project/static'+ new_name)#Damaged vehicle with location image save
+        policy_am=database_connection(p,status,new_name)
+        if policy_am==0:
+           return "<h1>Claim Completed</h1>"
+        Result=Estimation(analy.keys())
+        total=(Result["Scaled Total"]+policy_am)*0.5 #approximate cost estimation with considering policy amount and car damages
+        if severity_Class=="Severe_Damage":
+            total=total*4 #Damages cost based on severity of damage
+        elif(severity_Class=="Moderate_Damage"):
+            total=total*3
+        elif(severity_Class=="Minor_Damage"):
+            total=total*2
+        Result["Scaled Total"]=total #estimating scaled total
+        return render_template("Request_Result.html",name=new_name,result=Result,Status=status,intensity=severity_Class)
+app.run(host='localhost', port=8080) 
