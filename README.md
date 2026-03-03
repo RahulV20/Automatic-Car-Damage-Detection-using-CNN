@@ -49,3 +49,22 @@ flowchart TD
     E --> E1[Minor]
     E --> E2[Moderate]
     E --> E3[Severe]
+
+## Approach (high-level)
+
+This project uses **transfer learning** with **VGG16 (ImageNet weights)** in a lightweight but effective way:
+
+- **VGG16** is used as a **feature extractor**
+- Features are taken from the **fc1 layer** (4096-dimensional embeddings)
+- A **Logistic Regression** classifier is trained for each stage:
+    - Check 2 classifier: Damaged vs Not Damaged
+    - Check 3 classifier: Front vs Rear vs Side
+    - Check 4 classifier: Minor vs Moderate vs Severe
+
+Why this approach:
+
+- Works well when dataset size is limited
+- Faster training compared to fine-tuning a full CNN
+- Easier to interpret and iterate
+
+
