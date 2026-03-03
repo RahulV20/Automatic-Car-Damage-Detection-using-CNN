@@ -17,7 +17,7 @@ It is designed as a **decision-support prototype** for insurance-style triage wo
 - [Key Results](#key-results)
 - [Quick Demo](#quick-demo)
 - [Pipeline Overview](#pipeline-overview)
-- [Methodology (High-Level)](#methodology-high-level)
+- [Methodology](#methodology)
 - [Project Structure](#project-structure)
 - [Setup](#setup)
 - [How to Run](#how-to-run)
@@ -25,7 +25,6 @@ It is designed as a **decision-support prototype** for insurance-style triage wo
 - [Handling Limited Data](#handling-limited-data)
 - [Evaluation Visuals](#evaluation-visuals)
 - [Limitations & Future Improvements](#limitations--future-improvements)
-- [Contact](#contact)
 
 ---
 
