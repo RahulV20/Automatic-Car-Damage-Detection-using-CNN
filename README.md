@@ -69,9 +69,6 @@ This kind of structure can reduce back-and-forth, improve documentation quality,
 #### Example Output — Check 4 (Minor / Moderate / Severe)
 ![Check 4 Demo](assets/demo_check4_severity.png)
 
-#### Optional: End-to-End Demo GIF (Best for Recruiters)
-![End-to-End Demo](assets/demo_end_to_end.gif)
-
 ---
 
 ## Pipeline Overview
@@ -195,3 +192,15 @@ The dataset is not uploaded to GitHub because:
     severe/
 
 This repo is still reproducible because the pipeline and artifacts are included, and the dataset structure is documented clearly.
+
+### Handling Limited Data
+
+This project addresses smaller datasets primarily through:
+
+- Transfer learning (VGG16 pretrained on ImageNet)
+- Feature extraction + Logistic Regression, which is stable and efficient on limited data
+
+**Basic Data Augmentation (recommended for re-training):** If someone retrains this pipeline, they can improve robustness using basic augmentation (rotations, flips, zoom, brightness).
+
+#### Example augmentation (Keras):
+![Augmentation](assets/augmentation.png)
