@@ -97,6 +97,8 @@ flowchart TD
     E --> E2[Moderate]
     E --> E3[Severe]
 ```
+---
+
 ## Methodology
 
 Instead of training a full CNN end-to-end, the pipeline does:
@@ -104,8 +106,26 @@ Instead of training a full CNN end-to-end, the pipeline does:
 1. Feature Extraction: VGG16 acts like a “visual feature generator” (edges, textures, shapes).
 2. Lightweight Classification: A Logistic Regression classifier is trained on those extracted features.
 
-### What this achieves
+#### What this achieves
 
 - Faster training
 - Reduced overfitting risk compared to training a full CNN
 - Practical performance with limited labelled data
+
+## Project Structure
+
+This repository includes:
+
+- .ipynb notebooks for each check (training and inference)
+- Saved artifacts (e.g., .pkl, .h5, .yml) needed for running prediction
+- No dataset (due to size + redistribution constraints)
+
+## Setup
+
+If your repo includes environment.yml, use Conda:
+conda env create -f environment.yml
+conda activate <your-env-name>
+
+If you’re using pip instead:
+pip install -r requirements.txt
+
