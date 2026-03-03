@@ -204,3 +204,18 @@ This project addresses smaller datasets primarily through:
 
 #### Example augmentation (Keras):
 ![Augmentation Keras](assets/augmentation_keras.png)
+
+* Augmentation is a common technique to reduce overfitting and improve generalization when images are limited or biased in angle/lighting.
+
+---
+
+## Evaluation Visuals
+
+#### Check 2 — Damage vs Not Damage
+![Check 2](assets/check2_heatmap.png)
+
+#### Check 3 — Location (Front/Rear/Side)
+![Check 3](assets/check3_heatmap.png)
+
+#### Check 4 — Severity (Minor/Moderate/Severe)
+![Check 4](assets/check4_heatmap.png)
