@@ -112,6 +112,8 @@ Instead of training a full CNN end-to-end, the pipeline does:
 - Reduced overfitting risk compared to training a full CNN
 - Practical performance with limited labelled data
 
+---
+
 ## Project Structure
 
 This repository includes:
@@ -120,13 +122,76 @@ This repository includes:
 - Saved artifacts (e.g., .pkl, .h5, .yml) needed for running prediction
 - No dataset (due to size + redistribution constraints)
 
-## Setup
+### Setup
 
 If your repo includes environment.yml, use Conda:
 
 - conda env create -f environment.yml
-  conda activate <your-env-name>
+- conda activate <your-env-name>
 
 If you’re using pip instead:
 - pip install -r requirements.txt
 
+### How to Run
+
+Because the dataset isn’t included, the fastest way to see results is to run prediction notebooks.
+
+#### Recommended run order (demo-focused)
+
+1. **Check 1 — Car or Not**: first check - car or not - 1.ipynb
+2. **Check 2 — Damaged or Not**: Second Check - Prediction Time.ipynb
+3. **Check 3 — Location (Front/Rear/Side)**: Third Check - Prediction time.ipynb
+4. **Check 4 — Severity (Minor/Moderate/Severe)**: Fourth Check - Prediction time.ipynb
+
+In each prediction notebook, replace the image path with your own image to test quickly.
+
+#### Training notebooks (if dataset is available)
+
+Each stage typically includes:
+
+- feature extraction notebook
+- “Creating Logistic” notebook (training the classifier)
+
+## Dataset (Not Included)
+
+The dataset is not uploaded to GitHub because:
+- it exceeds GitHub size constraints, and
+- the images were curated from publicly available sources that may have redistribution restrictions.
+
+**Dataset summary used during development**
+- 900+ labelled vehicle images
+- structured into folder-based classes
+- split 80/20 train/test per stage
+
+### Folder structures expected
+
+- **Check 2 — Damage vs Whole:**
+  data1a/
+  training/
+    damaged/
+    whole/
+  validation/
+    damaged/
+    whole/
+- **Check 3 — Front / Rear / Side:**
+    data2a/
+  training/
+    front/
+    rear/
+    side/
+  validation/
+    front/
+    rear/
+    side/
+- **Check 4 — Minor / Moderate / Severe:**
+  data3a/
+  training/
+    minor/
+    moderate/
+    severe/
+  validation/
+    minor/
+    moderate/
+    severe/
+
+This repo is still reproducible because the pipeline and artifacts are included, and the dataset structure is documented clearly.
