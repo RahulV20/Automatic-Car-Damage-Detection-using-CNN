@@ -219,3 +219,13 @@ This project addresses smaller datasets primarily through:
 
 #### Check 4 — Severity (Minor/Moderate/Severe)
 ![Check 4](assets/check4_heatmap.png)
+
+--- 
+
+## Limitations & Future Improvements
+
+- Improve severity prediction using more diverse training images and clearer severity labelling
+- Fine-tune VGG16 layers (instead of only feature extraction) to improve generalization
+- Train a single multi-head model to predict location + severity jointly
+- Add a lightweight web interface for claim upload and results visualization
+- Add calibration and confidence thresholds for safer decision support
