@@ -203,4 +203,4 @@ This project addresses smaller datasets primarily through:
 **Basic Data Augmentation (recommended for re-training):** If someone retrains this pipeline, they can improve robustness using basic augmentation (rotations, flips, zoom, brightness).
 
 #### Example augmentation (Keras):
-![Augmentation](assets/augmentation.png)
+![Augmentation Keras](assets/augmentation_keras.png)
