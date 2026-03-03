@@ -50,6 +50,7 @@ flowchart TD
     E --> E2[Moderate]
     E --> E3[Severe]
 
+---
 ## Approach (high-level)
 
 This project uses **transfer learning** with **VGG16 (ImageNet weights)** in a lightweight but effective way:
