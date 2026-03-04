@@ -121,12 +121,13 @@ This repository includes:
 ### Setup
 
 If your repo includes environment.yml, use Conda:
-
-- conda env create -f environment.yml
-- conda activate <your-env-name>
+```bash
+conda env create -f environment.yml
+conda activate <your-env-name>
 
 If you’re using pip instead:
-- pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
 
 ### How to Run
 
