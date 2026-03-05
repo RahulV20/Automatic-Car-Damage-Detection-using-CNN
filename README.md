@@ -195,7 +195,9 @@ The dataset is not uploaded to GitHub because:
 
 This repo is still reproducible because the pipeline and artifacts are included, and the dataset structure is documented clearly.
 
-### Handling Limited Data
+---
+
+## Handling Limited Data
 
 This project addresses smaller datasets primarily through:
 
